@@ -1,5 +1,5 @@
 {
-  "project_cyyonfigs_project": "snapshot-audit",
+  "project_configs_project": "snapshot-audit",
   "components": {
     "context": "."
   }
