@@ -1,0 +1,18 @@
+{
+  "project_cyyonfigs_project": "snapshot-audit",
+  "components": {
+    "context": "."
+  }
+  "branches": {
+    "audit": {
+      "env_name": "test",
+      "context": "gke_test-4f727257h6h_us-central1_test-b",
+      "namespace": "michel-test",
+      "values": ["envs/gke-test-b.yaml"],
+      "deploy_test": {
+        "resources": [],
+        "timeout": 1200
+      }
+    }
+  }
+}
