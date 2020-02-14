@@ -12,8 +12,6 @@ RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-bionic main" | tee 
 RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 # Yes, need to update again.
 RUN apt update && apt install -y google-cloud-sdk
-# Google Service Account with limited privileges.
-COPY ./k8s_snapshotter_audit_sa.json /
 
 # Set up kubectl:
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.13.2/bin/linux/amd64/kubectl
