@@ -3,9 +3,9 @@
   "components": {
     "audit": {
       "context": ".",
-      "dockerfile": "./Dockeirfile"
+      "dockerfile": "./Dockerfile"
     }
-  }
+  },
   "branches": {
     "audit": {
       "env_name": "test",
