@@ -1,7 +1,9 @@
 {
   "project_configs_project": "snapshot-audit",
   "components": {
-    "context": "."
+    "audit": {
+      "context": "."
+    }
   }
   "branches": {
     "audit": {
