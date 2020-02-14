@@ -1,5 +1,5 @@
 {
-  "project_configs_project": "development",
+  "project_configs_project": "michel",
   "components": {
     "audit": {
       "context": ".",
