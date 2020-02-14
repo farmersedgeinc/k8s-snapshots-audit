@@ -1,5 +1,5 @@
 {
-  "project_configs_project": "snapshot-audit",
+  "project_configs_project": "development",
   "components": {
     "audit": {
       "context": ".",
@@ -9,7 +9,7 @@
   "branches": {
     "audit": {
       "env_name": "test",
-      "context": "gke_test-4f727257h6h_us-central1_test-b",
+      "context": "gke-test-b",
       "namespace": "michel-test",
       "values": ["envs/gke-test-b.yaml"],
       "deploy_test": {
