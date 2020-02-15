@@ -41,7 +41,7 @@ def slack_notify(error_msg, webhook)
 end
 
 # Log into google and set the project.
-gcloud_auth_ok = `gcloud auth activate-service-account --key-file /k8s_snapshotter_audit_sa.json > /dev/null 2>&1 ; echo $?`
+gcloud_auth_ok = `gcloud auth activate-service-account --key-file /service-account/k8s_snapshotter_audit_sa.json > /dev/null 2>&1 ; echo $?`
 slack_notify('Auth to Gcloud failed.', slack_k8s_snapshotter_app_webhook.to_s) unless gcloud_auth_ok.to_i.zero?
 gcloud_set_project_ok = `gcloud config set project #{gcloud_project} > /dev/null 2>&1 ; echo $?`
 slack_notify('Set Gcloud project failed.', slack_k8s_snapshotter_app_webhook.to_s) unless gcloud_set_project_ok.to_i.zero?
