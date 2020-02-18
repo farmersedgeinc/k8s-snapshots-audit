@@ -62,7 +62,7 @@ pv_arr.each do |pv|
   if pv_deleted[/(Not Found)/]
     # As the main loop can take a while to complete, just ensure the PV has not been deleted in the mean while.
     # Example: Error from server (NotFound): persistentvolumes "pvc-dbf41f81-2e44-11ea-b136-4201ac100008" not found
-    puts "This PV deleted since start of run: #{pv}"
+    puts "This PV deleted since start of run: #{pv}."
     next
   end
 
@@ -79,18 +79,19 @@ pv_arr.each do |pv|
     # "Zone" and "region" appear under "labels:" as part of the "failure-domain".
     supported_volume = `kubectl describe #{pv} | grep failure-domain.beta.kubernetes.io > /dev/null 2>&1 ; echo $?`
     if supported_volume.to_i.zero?
-      puts "Adding annotation to this PV: #{pv}"
+      puts "Adding annotation to this PV: #{pv}."
       patch_ok = `kubectl patch #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
       slack_notify("Failed to patch #{pv}!", slack_k8s_snapshotter_app_webhook.to_s) unless patch_ok.to_i.zero?
       pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Added to Snapshotter Schedule']
     else
-      puts "Found unsupported volume #{pv}"
+      puts "Found unsupported volume #{pv}."
     end
   end
   pv_report_arr.push(pv_report_line_arr)
 end
 
 # Report Preamble
+puts 'Starting report preparation.'
 report = []
 report.push('\documentclass[10pt]{article}')
 report.push('\usepackage[margin=0.5in]{geometry}')
@@ -110,14 +111,16 @@ pv_report_arr.each do |line|
     namespace = line[0]
     report.push('\section{' + line[0] + '}')
     report.push('\begin{itemize}')
-    puts "Preparing report for namespace: #{namespace}"
+    puts "Preparing report for namespace: #{namespace}."
   end
   persistent_volume = line[1].match(%r{persistentvolume\/(?<persistent_volume>.+)$})
   supported_volume = `kubectl describe #{pv} | grep failure-domain.beta.kubernetes.io > /dev/null 2>&1 ; echo $?`
   if supported_volume.to_i.zero?
     report.push('\item PVC: ' + persistent_volume[:persistent_volume] + ' SCHEDULE: ' + line[2])
+    puts 'PVC: ' + persistent_volume[:persistent_volume] + ' SCHEDULE: ' + line[2]
   else
     report.push('\item PVC: ' + persistent_volume[:persistent_volume] + ' This volume unsupported.')
+    puts 'PVC: ' + persistent_volume[:persistent_volume] + ' This volume unsupported.'
   end
   next if line[2].match?(/Added/)
 
