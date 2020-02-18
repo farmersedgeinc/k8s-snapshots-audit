@@ -57,10 +57,12 @@ pv_report_arr = []
 
 # For each PV, check to see if an annotation for the snapshotter needs to be added.
 pv_arr.each do |pv|
+  puts "Checking #{pv} for annotation."
   pv_deleted = `kubectl describe #{pv} | grep backup.kubernetes.io.deltas > /dev/null 2>&1`
   if pv_deleted[/(Not Found)/]
     # As the main loop can take a while to complete, just ensure the PV has not been deleted in the mean while.
     # Example: Error from server (NotFound): persistentvolumes "pvc-dbf41f81-2e44-11ea-b136-4201ac100008" not found
+    puts "This PV deleted since start of run: #{pv}"
     next
   end
 
@@ -72,6 +74,7 @@ pv_arr.each do |pv|
     backup_schedule = annotation[/P.*$/]
     pv_report_line_arr = [claim_line_arr[:claim_name], pv, backup_schedule]
   else
+    puts "Adding annotation to this PV: #{pv}"
     patch_ok = `kubectl patch #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
     slack_notify("Failed to patch #{pv}!", slack_k8s_snapshotter_app_webhook.to_s) unless patch_ok.to_i.zero?
     pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Added to Snapshotter Schedule']
@@ -99,6 +102,7 @@ pv_report_arr.each do |line|
     namespace = line[0]
     report.push('\section{' + line[0] + '}')
     report.push('\begin{itemize}')
+    puts "Preparing report for namespace: #{namespace}"
   end
   persistent_volume = line[1].match(%r{persistentvolume\/(?<persistent_volume>.+)$})
   report.push('\item PVC: ' + persistent_volume[:persistent_volume] + ' SCHEDULE: ' + line[2])
