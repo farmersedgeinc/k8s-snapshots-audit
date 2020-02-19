@@ -85,6 +85,7 @@ pv_arr.each do |pv|
       pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Added to Snapshotter Schedule']
     else
       puts "Found unsupported volume #{pv}."
+      pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Unsupported Volume']
     end
   end
   pv_report_arr.push(pv_report_line_arr)
