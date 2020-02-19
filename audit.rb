@@ -149,7 +149,7 @@ report.push('\end{itemize}')
 report.push('\vspace*{\fill}')
 report.push('Note, PVCs which are listed as "Added to Snaphotter Schedule" have been done today and are not expected to have snapshots yet.')
 report.push('Also, if snapshot dates appear in red, check it see if snapshot creation has stopped for some reason.  Check the "k8s\_snapshots" pod logs for errors and restart if need be.')
-report.push('The "k8s\_snapshots" does not support ROOK, NFS, or any other volumes which do no have labels for "region" and "zone".')
+report.push('The "k8s\_snapshots" does not support ROOK, NFS, or any other volumes which do not have labels for "region" and "zone".')
 report.push('\end{document}')
 
 # Prepare PFD
