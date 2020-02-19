@@ -72,7 +72,7 @@ pv_arr.each do |pv|
   if delta_check.to_i.zero?
     annotation = `kubectl describe #{pv} | grep backup.kubernetes.io.deltas`
     backup_schedule = annotation[/P.*$/]
-    pv_report_line_arr = [claim_line_arr[:claim_name], pv, backup_schedule]
+    pv_report_line_arr = [claim_line_arr[:claim_name], pv, "Schedule: #{backup_schedule}"]
   else
     # The k8s-snapshots program will consider any GKE PVC which lacks "region" or "zone" within the PV Labels as an "Unsupported Volume".
     # NFS and Rook are not supported, most likely they are missing the "gcePersistentDisk" (via "get -o yaml") which points to the actual disk.
@@ -115,15 +115,10 @@ pv_report_arr.each do |line|
     puts "Preparing report for namespace: #{namespace}."
   end
   persistent_volume = line[1].match(%r{persistentvolume\/(?<persistent_volume>.+)$})
-  supported_volume = `kubectl describe #{pv} | grep failure-domain.beta.kubernetes.io > /dev/null 2>&1 ; echo $?`
-  if supported_volume.to_i.zero?
-    report.push('\item PVC: ' + persistent_volume[:persistent_volume] + ' SCHEDULE: ' + line[2])
-    puts 'PVC: ' + persistent_volume[:persistent_volume] + ' SCHEDULE: ' + line[2]
-  else
-    report.push('\item PVC: ' + persistent_volume[:persistent_volume] + ' This volume unsupported.')
-    puts 'PVC: ' + persistent_volume[:persistent_volume] + ' This volume unsupported.'
-  end
-  next if line[2].match?(/Added/)
+  report.push('\item PVC: ' + persistent_volume[:persistent_volume] + ' ' + line[2])
+  # Pretty safe to assume any snapshot schedule will at least be done daily (thus "P1D"), so if we see that in the PV annotations,
+  # we will check for the number of snapshots, as well as the date of the oldest and newest snapshots.
+  next unless line[2].match?(/P1D/)
 
   # NOTE: snapshots = `gcloud compute snapshots list --filter="sourceDisk='pvc-dcfa8703-06ff-11ea-a45c-4201ac10000a' 2>&1 "`
   # The line above works fine from the command line, but gives this error when run from a script:
