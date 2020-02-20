@@ -1,14 +1,14 @@
 {
   "project_configs_project": "k8s-snapshotter-audit",
   "components": {
-    "audit.rb": {
+    "audit": {
       "context": ".",
       "dockerfile": "./Dockerfile"
     }
   },
   "branches": {
     "test-b": {
-      "env_name": "test",
+      "env_name": "test-b",
       "context": "gke-test-b",
       "namespace": "michel-test",
       "values": ["envs/gke-test-b.yaml"],
