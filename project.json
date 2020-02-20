@@ -1,0 +1,21 @@
+{
+  "project_configs_project": "k8s-snapshotter-audit",
+  "components": {
+    "audit.rb": {
+      "context": ".",
+      "dockerfile": "./Dockerfile"
+    }
+  },
+  "branches": {
+    "test-b": {
+      "env_name": "test",
+      "context": "gke-test-b",
+      "namespace": "michel-test",
+      "values": ["envs/gke-test-b.yaml"],
+      "deploy_test": {
+        "resources": [],
+        "timeout": 1200
+      }
+    }
+  }
+}
