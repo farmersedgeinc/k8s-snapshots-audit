@@ -10,7 +10,7 @@
     "test-b": {
       "env_name": "test-b",
       "context": "gke-test-b",
-      "namespace": "michel-test",
+      "namespace": "k8s-snapshotter-audit",
       "values": ["envs/gke-test-b.yaml"],
       "deploy_test": {
         "resources": [],

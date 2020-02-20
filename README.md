@@ -4,8 +4,6 @@ This script runs daily to create an audit report of the state of PV snapshots fo
 to be a companion to the utility which actually schedules the snapshots, which is called
 [k8s-snapshots](https://github.com/farmersedgeinc/k8s-snapshots).
 
-This audit can (but is not obligated to) reside in the same namespace as the `k8s-snapshots` pod, typically in namespace `fe-cluster`.
-
 In short, the `k8s-snapshots` will create daily snapshots of all PVs which have a "backup schedule" annotation.
 This annotation will determine how often to schedule snapshots and how long to retain these.
 
