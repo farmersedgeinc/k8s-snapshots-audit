@@ -16,6 +16,16 @@
         "resources": [],
         "timeout": 1200
       }
+    },
+    "sandbox-a": {
+      "env_name": "sandbox-a",
+      "context": "gke-sandbox-a",
+      "namespace": "k8s-snapshotter-audit",
+      "values": ["envs/gke-sandbox-a.yaml"],
+      "deploy_test": {
+        "resources": [],
+        "timeout": 1200
+      }
     }
   }
 }
