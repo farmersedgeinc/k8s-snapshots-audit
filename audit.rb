@@ -82,10 +82,10 @@ pv_arr.each do |pv|
       puts "Adding annotation to this PV: #{pv}."
       patch_ok = `kubectl patch #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
       slack_notify("Failed to patch #{pv}!", slack_k8s_snapshotter_app_webhook.to_s) unless patch_ok.to_i.zero?
-      pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Added to Snapshotter Schedule']
+      pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Added to Snapshotter Schedule}']
     else
       puts "Found unsupported volume #{pv}."
-      pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Unsupported Volume']
+      pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Unsupported Volume}']
     end
   end
   pv_report_arr.push(pv_report_line_arr)
@@ -130,6 +130,10 @@ pv_report_arr.each do |line|
     snapshots_arr.each do |single_snapshot|
       single_snapshot = single_snapshot.match(/^(?<snap_name>\S+).*$/)
       creation_timestamp = `gcloud compute snapshots describe #{single_snapshot[:snap_name]} --format="value(creationTimestamp)" 2>&1`
+      # Snapshot lifecycle is "CREATING --> UPLOADING --> READY --> DELETING". Since we could hit a DELETING phase right after the snapshot
+      # list was created, we would get an error trying to get the creation_timestamp, so we skip as we would not care for a deleted snapshot anyway.
+      next if creation_timestamp.match?(/ERROR/)
+
       timestamp_arr.push(creation_timestamp)
     end
     report.push(' ')
