@@ -7,6 +7,16 @@
     }
   },
   "branches": {
+    "master": {
+      "env_name": "prod-a",
+      "context": "gke-prod-a",
+      "namespace": "k8s-snapshotter-audit",
+      "values": ["envs/gke-prod-a.yaml"],
+      "deploy_test": {
+        "resources": [],
+        "timeout": 1200
+      }
+    },
     "test-b": {
       "env_name": "test-b",
       "context": "gke-test-b",
@@ -22,6 +32,16 @@
       "context": "gke-sandbox-a",
       "namespace": "k8s-snapshotter-audit",
       "values": ["envs/gke-sandbox-a.yaml"],
+      "deploy_test": {
+        "resources": [],
+        "timeout": 1200
+      }
+    },
+    "els-weather": {
+      "env_name": "els-weather",
+      "context": "gke-els-weather",
+      "namespace": "k8s-snapshotter-audit",
+      "values": ["envs/gke-els-weather.yaml"],
       "deploy_test": {
         "resources": [],
         "timeout": 1200
