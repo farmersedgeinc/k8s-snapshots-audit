@@ -137,7 +137,7 @@ pv_report_arr.each do |line|
       timestamp_arr.push(creation_timestamp)
     end
     report.push(' ')
-    if Date.parse(timestamp_arr.max.to_s) < Date.today - 1
+    if Date.parse(timestamp_arr.max.to_s) < Date.today - 2
       report.push('Number of Snapshots: ' + timestamp_arr.count.to_s + ' Oldest: ' + timestamp_arr.min.to_s.chomp + ' Newest: {\color{red}' + timestamp_arr.max.to_s.chomp + '}')
     else
       report.push('Number of Snapshots: ' + timestamp_arr.count.to_s + ' Oldest: ' + timestamp_arr.min.to_s.chomp + ' Newest: {\color{blue}' + timestamp_arr.max.to_s.chomp + '}')
