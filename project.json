@@ -14,7 +14,7 @@
       "values": ["envs/gke-prod-a.yaml"],
       "deploy_test": {
         "resources": [],
-        "timeout": 1200
+        "timeout": 900
       }
     },
     "test-b": {
@@ -24,7 +24,7 @@
       "values": ["envs/gke-test-b.yaml"],
       "deploy_test": {
         "resources": [],
-        "timeout": 1200
+        "timeout": 900
       }
     },
     "sandbox-a": {
@@ -34,7 +34,7 @@
       "values": ["envs/gke-sandbox-a.yaml"],
       "deploy_test": {
         "resources": [],
-        "timeout": 1200
+        "timeout": 900
       }
     },
     "els-weather": {
@@ -44,7 +44,7 @@
       "values": ["envs/gke-els-weather.yaml"],
       "deploy_test": {
         "resources": [],
-        "timeout": 1200
+        "timeout": 900
       }
     }
   }
