@@ -130,14 +130,14 @@ pv_report_arr.each do |line|
     snapshots_arr.each do |single_snapshot|
       single_snapshot = single_snapshot.match(/^(?<snap_name>\S+).*$/)
       creation_timestamp = `gcloud compute snapshots describe #{single_snapshot[:snap_name]} --format="value(creationTimestamp)" 2>&1`
-      # Snapshot lifecycle is "CREATING --> UPLOADING --> READY --> DELETING", since rabbitmq snapshots cycle VERY quickly, we could hit a DELETING phase
-      # right after the snapshot list was created, in which case we won't get a creation_timestamp, and we would not care for a deleted snapshot anyway.
+      # Snapshot lifecycle is "CREATING --> UPLOADING --> READY --> DELETING". Since we could hit a DELETING phase right after the snapshot
+      # list was created, we would get an error trying to get the creation_timestamp, so we skip as we would not care for a deleted snapshot anyway.
       next if creation_timestamp.match?(/ERROR/)
 
       timestamp_arr.push(creation_timestamp)
     end
     report.push(' ')
-    if Date.parse(timestamp_arr.max.to_s) < Date.today - 1
+    if Date.parse(timestamp_arr.max.to_s) < Date.today - 2
       report.push('Number of Snapshots: ' + timestamp_arr.count.to_s + ' Oldest: ' + timestamp_arr.min.to_s.chomp + ' Newest: {\color{red}' + timestamp_arr.max.to_s.chomp + '}')
     else
       report.push('Number of Snapshots: ' + timestamp_arr.count.to_s + ' Oldest: ' + timestamp_arr.min.to_s.chomp + ' Newest: {\color{blue}' + timestamp_arr.max.to_s.chomp + '}')
