@@ -58,7 +58,7 @@ pv_report_arr = []
 # For each PV, check to see if an annotation for the snapshotter needs to be added.
 pv_arr.each do |pv|
   puts "Checking #{pv} for annotation."
-  pv_deleted = `kubectl describe #{pv} | grep backup.kubernetes.io.deltas > /dev/null 2>&1`
+  pv_deleted = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas > /dev/null 2>&1`
   if pv_deleted[/(Not Found)/]
     # As the main loop can take a while to complete, just ensure the PV has not been deleted in the mean while.
     # Example: Error from server (NotFound): persistentvolumes "pvc-dbf41f81-2e44-11ea-b136-4201ac100008" not found
