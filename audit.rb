@@ -66,21 +66,21 @@ pv_arr.each do |pv|
     next
   end
 
-  claim_line = `kubectl describe #{pv} | grep Claim: `
+  claim_line = `kubectl describe persistentvolume #{pv} | grep Claim: `
   claim_line_arr = claim_line.match(%r{^Claim:\s+(?<claim_name>[a-z0-9-]+)\/[a-z0-9-]+$})
-  delta_check = `kubectl describe #{pv} | grep backup.kubernetes.io.deltas > /dev/null 2>&1 ; echo $?`
+  delta_check = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas > /dev/null 2>&1 ; echo $?`
   if delta_check.to_i.zero?
-    annotation = `kubectl describe #{pv} | grep backup.kubernetes.io.deltas`
+    annotation = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas`
     backup_schedule = annotation[/P.*$/]
     pv_report_line_arr = [claim_line_arr[:claim_name], pv, "Schedule: #{backup_schedule}"]
   else
     # The k8s-snapshots program will consider any GKE PVC which lacks "region" or "zone" within the PV Labels as an "Unsupported Volume".
     # NFS and Rook are not supported, most likely they are missing the "gcePersistentDisk" (via "get -o yaml") which points to the actual disk.
     # "Zone" and "region" appear under "labels:" as part of the "failure-domain".
-    supported_volume = `kubectl describe #{pv} | grep failure-domain.beta.kubernetes.io > /dev/null 2>&1 ; echo $?`
+    supported_volume = `kubectl describe persistentvolume #{pv} | grep failure-domain.beta.kubernetes.io > /dev/null 2>&1 ; echo $?`
     if supported_volume.to_i.zero?
       puts "Adding annotation to this PV: #{pv}."
-      patch_ok = `kubectl patch #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
+      patch_ok = `kubectl patch persistentvolume #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
       slack_notify("Failed to patch #{pv}!", slack_k8s_snapshotter_app_webhook.to_s) unless patch_ok.to_i.zero?
       pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Added to Snapshotter Schedule}']
     else
