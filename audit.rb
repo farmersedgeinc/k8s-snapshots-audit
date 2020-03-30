@@ -89,7 +89,7 @@ pv_arr.each do |pv|
     end
   end
   pv_report_arr.push(pv_report_line_arr)
-  puts 'Report Line: ' + pv_report_line_arr
+  puts "Report Line: #{pv_report_line_arr[0]} #{pv_report_line_arr[1]} #{pv_report_line_arr[2]}"
 end
 
 # Report Preamble
