@@ -50,8 +50,8 @@ slack_notify('Set Gcloud project failed.', slack_k8s_snapshotter_app_webhook.to_
 context_check = `#{set_context} > /dev/null 2>&1 ; echo $?`
 slack_notify('Could not set kube context.', slack_k8s_snapshotter_app_webhook.to_s) unless context_check.to_i.zero?
 
-# Get all of the physical volumes for the current context.
-pv_flat_list = `kubectl get pv -o name`
+# Get all of the physical volumes for the current context.  We only want the "Bound" volumes, not the "Available, Released, Terminating, etc." volumes.
+pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}"`
 pv_arr = pv_flat_list.split(' ')
 pv_report_arr = []
 
