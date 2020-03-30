@@ -108,6 +108,11 @@ report.push('\maketitle')
 namespace = ''
 puts "REPORT SIZE before sort: #{pv_report_arr.length()}"
 pv_report_arr.sort!
+
+pv_report_arr.each do |line|
+  print "PRINT REP: #{line[0]},  #{line[0]}, #{line[0]}"
+end
+
 pv_report_arr.each do |line|
   if line[0] != namespace
     report.push('\end{itemize}') unless namespace == ''
