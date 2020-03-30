@@ -109,8 +109,9 @@ namespace = ''
 puts "REPORT SIZE before sort: #{pv_report_arr.length()}"
 pv_report_arr.sort!
 
+puts "Pre print array #{pv_report_arr.length()}"
 pv_report_arr.each do |line|
-  print "PRINT REP: #{line[0]},  #{line[1]}, #{line[2]}"
+  print "PRINT REP: #{line[0]},  #{line[1]}, #{line[2]} \n"
 end
 
 pv_report_arr.each do |line|
