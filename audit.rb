@@ -124,6 +124,7 @@ pv_report_arr.each do |line|
   end
   persistent_volume = line[1].match(%r{persistentvolume\/(?<persistent_volume>.+)$})
   report.push('\item PVC: ' + persistent_volume[:persistent_volume] + ' ' + line[2])
+  puts 'Report line push: ' + '\item PVC: ' + persistent_volume[:persistent_volume] + ' ' + line[2] + '\n'
   # Pretty safe to assume any snapshot schedule will at least be done daily (thus "P1D"), so if we see that in the PV annotations,
   # we will check for the number of snapshots, as well as the date of the oldest and newest snapshots.
   next unless line[2].match?(/P1D/)
