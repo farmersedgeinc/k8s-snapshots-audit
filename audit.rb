@@ -89,7 +89,7 @@ pv_arr.each do |pv|
     end
   end
   pv_report_arr.push(pv_report_line_arr)
-  puts "Report Line: #{pv_report_line_arr[0]} #{pv_report_line_arr[1]} #{pv_report_line_arr[2]} REPORT SIZE: #{pv_report_arr.length()}"
+  puts "Report Line: #{pv_report_line_arr[0]} #{pv_report_line_arr[1]} #{pv_report_line_arr[2]} REPORT SIZE: #{pv_report_arr.length}"
 end
 
 # Report Preamble
@@ -106,10 +106,10 @@ report.push('\maketitle')
 
 # Report Meat and Potatoes
 namespace = ''
-puts "REPORT SIZE before sort: #{pv_report_arr.length()}"
+puts "REPORT SIZE before sort: #{pv_report_arr.length}"
 pv_report_arr.sort!
 
-puts "Pre print array #{pv_report_arr.length()}"
+puts "Pre print array #{pv_report_arr.length}"
 pv_report_arr.each do |line|
   print "PRINT REP: #{line[0]},  #{line[1]}, #{line[2]} \n"
 end
