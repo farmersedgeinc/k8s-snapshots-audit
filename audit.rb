@@ -130,7 +130,7 @@ pv_report_arr.each do |line|
   # NOTE: snapshots = `gcloud compute snapshots list --filter="sourceDisk='pvc-dcfa8703-06ff-11ea-a45c-4201ac10000a' 2>&1 "`
   # The line above works fine from the command line, but gives this error when run from a script:
   # WARNING: --filter : operator evaluation is changing for consistency across Google APIs.  sourceDisk=pvc-xxx currently does not match but will match in the near future.
-  snapshots = `gcloud compute snapshots list | grep #{persistent_volume[:persistent_volume]} 2>&1 `
+  snapshots = `gcloud compute snapshots list | grep #{line[1]} 2>&1 `
   if snapshots.match?(/READY/)
     timestamp_arr = []
     snapshots_arr = snapshots.split("\n") # Yeah, has to be double quotes if you don't want the literal '\n'.
