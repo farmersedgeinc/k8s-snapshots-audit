@@ -1,8 +1,6 @@
 #!/usr/bin/ruby
 require 'date'
 
-# This version will NOT annotate!
-
 # Purpose of this script is to search all PVs in the gke clusters and flag
 # any that are missing the "delta" annotation.  This annotation is what tells
 # the k8s-snapshots to make backups.
@@ -82,8 +80,8 @@ pv_arr.each do |pv|
     supported_volume = `kubectl describe persistentvolume #{pv} | grep failure-domain.beta.kubernetes.io > /dev/null 2>&1 ; echo $?`
     if supported_volume.to_i.zero?
       puts "Adding annotation to this PV: #{pv}."
-      ## Michel ## patch_ok = `kubectl patch persistentvolume #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
-      ## Michel ## slack_notify("Failed to patch #{pv}!", slack_k8s_snapshotter_app_webhook.to_s) unless patch_ok.to_i.zero?
+      patch_ok = `kubectl patch persistentvolume #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
+      slack_notify("Failed to patch #{pv}!", slack_k8s_snapshotter_app_webhook.to_s) unless patch_ok.to_i.zero?
       pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Added to Snapshotter Schedule}']
     else
       puts "Found unsupported volume #{pv}."
