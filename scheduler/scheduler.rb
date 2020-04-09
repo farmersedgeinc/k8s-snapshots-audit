@@ -52,8 +52,7 @@ def slack_notify(error_msg, webhook)
 end
 
 # Log into google and set the project.
-## Michel ## gcloud_auth_ok = `gcloud auth activate-service-account --key-file /service-account/k8s_snapshotter_audit_sa.json > /dev/null 2>&1 ; echo $?`
-gcloud_auth_ok = `gcloud auth activate-service-account --key-file /home/michel/repos/audit/sa.json > /dev/null 2>&1 ; echo $?`
+gcloud_auth_ok = `gcloud auth activate-service-account --key-file /service-account/k8s_snapshotter_audit_sa.json > /dev/null 2>&1 ; echo $?`
 slack_notify('Auth to Gcloud failed.', slack_k8s_snapshotter_app_webhook.to_s) unless gcloud_auth_ok.to_i.zero?
 gcloud_set_project_ok = `gcloud config set project #{gcloud_project} > /dev/null 2>&1 ; echo $?`
 slack_notify('Set Gcloud project failed.', slack_k8s_snapshotter_app_webhook.to_s) unless gcloud_set_project_ok.to_i.zero?
@@ -63,10 +62,7 @@ context_check = `#{set_context} > /dev/null 2>&1 ; echo $?`
 slack_notify('Could not set kube context.', slack_k8s_snapshotter_app_webhook.to_s) unless context_check.to_i.zero?
 
 # Get all of the physical volumes for the current context.  We only want the "Bound" volumes, not the "Available, Released, Terminating, etc." volumes.
-## MICHEL ##pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}"`
-## pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}"`
-## MICHEL ##pv_flat_list = 'local-pv-be725a4c pvc-001d5704-1dcf-11ea-befc-4201ac10000a'
-pv_flat_list = 'pvc-51b3c1dc-4d1f-11ea-af3c-4201ac100009 local-pv-be725a4c pvc-001d5704-1dcf-11ea-befc-4201ac10000a pvc-a2bba08d-1c50-11ea-befc-4201ac10000a pvc-28514833-79d9-11ea-b1cd-4201ac100004'
+pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}"`
 pv_arr = pv_flat_list.split(' ')
 
 # For each PVC, get the "PDName".
