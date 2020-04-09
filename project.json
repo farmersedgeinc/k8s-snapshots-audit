@@ -2,8 +2,12 @@
   "project_configs_project": "k8s-snapshotter-audit",
   "components": {
     "audit": {
-      "context": ".",
-      "dockerfile": "./Dockerfile"
+      "context": "./audit",
+      "dockerfile": "./audit/Dockerfile"
+    },
+    "scheduler": {
+      "context": "./scheduler",
+      "dockerfile": "./scheduler/audit/Dockerfile"
     }
   },
   "branches": {
