@@ -81,7 +81,7 @@ pv_arr.each do |pv|
     if snap_schedule.length > 1
       puts 'Found Snapshot Schedule for: ' + pd_name
     else
-      # schedule_assigned = `gcloud compute disks add-resource-policies #{pd_name} --resource-policies dailykeep14 --region us-central1 2>&1`
+      `gcloud compute disks add-resource-policies #{pd_name} --resource-policies dailykeep14 --region us-central1 2>&1`
       puts 'ASSIGNED Snapshot Schedule for:' + pd_name
     end
   else
