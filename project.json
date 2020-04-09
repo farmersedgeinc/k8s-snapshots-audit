@@ -7,7 +7,7 @@
     },
     "scheduler": {
       "context": "./scheduler",
-      "dockerfile": "./scheduler/audit/Dockerfile"
+      "dockerfile": "./scheduler/Dockerfile"
     }
   },
   "branches": {

@@ -9,6 +9,18 @@
 # schedule is 'dailykeep14'.  You can always remove the "dailykeep14" snapshot schedule from your disk and assign a different custom
 # schedule.  This script will NOT undo your selection of a snapshot schedule.
 #
+# Example of creating a snapshot schedule:
+#
+# gcloud compute resource-policies create snapshot-schedule dailykeep14 \
+# --description "Daily snapshot at 7am UTC, keep 14 days" \
+# --max-retention-days 14 \
+# --start-time 7:00 \
+# --daily-schedule \
+# --on-source-disk-delete apply-retention-policy \
+# --snapshot-labels audit=fe-devops \
+# --region us-central1 \
+# --storage-location us-central1
+#
 # Michel Remillard
 # 2020 April 14
 
