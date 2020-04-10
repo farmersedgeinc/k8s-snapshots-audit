@@ -62,17 +62,16 @@ context_check = `#{set_context} > /dev/null 2>&1 ; echo $?`
 slack_notify('Could not set kube context.', slack_k8s_snapshotter_app_webhook.to_s) unless context_check.to_i.zero?
 
 # Get all of the physical volumes for the current context.  We only want the "Bound" volumes, not the "Available, Released, Terminating, etc." volumes.
-## pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}"`
-pv_flat_list = 'pvc-fb8fae23-6001-11ea-976a-4201ac100004 pvc-cb8fae23-6001-11ea-976a-4201ac100004'
+pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}"`
 pv_arr = pv_flat_list.split(' ')
 
 # For each PVC, get the "PDName".
 pv_arr.each do |pv|
-  pv_deleted = `kubectl describe persistentvolume #{pv} > /dev/null 2>&1`
-  ## Michel ## if pv_deleted[/(NotFound)/]
+  pv_deleted = `kubectl describe persistentvolume #{pv} 2>&1`
   if pv_deleted[/NotFound/]
     # As the main loop can take a while to complete, just ensure the PV has not been deleted in the mean while.
     # Example: Error from server (NotFound): persistentvolumes "pvc-dbf41f81-2e44-11ea-b136-4201ac100008" not found
+    # This is informational only, not a cause to exit the script.
     puts "This PV deleted since start of run: #{pv}."
     next
   end
@@ -85,7 +84,8 @@ pv_arr.each do |pv|
     else
       assignment_results = `gcloud compute disks add-resource-policies #{pd_name} --resource-policies dailykeep14 --region us-central1 2>&1`
       if assignment_results[/ERROR/]
-        slack_notify("Snapshot Scheduler assignment error: #{assignment_results}", slack_k8s_snapshotter_app_webhook.to_s)
+        puts 'ASSIGNMENT ERROR: ' + assignment_results
+        slack_notify("Snapshot Scheduler assignment error for #{pd_name}", slack_k8s_snapshotter_app_webhook.to_s)
       else
         puts 'ASSIGNED Snapshot Schedule for:' + pd_name
       end
