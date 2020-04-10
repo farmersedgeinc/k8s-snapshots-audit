@@ -69,7 +69,8 @@ pv_arr = pv_flat_list.split(' ')
 # For each PVC, get the "PDName".
 pv_arr.each do |pv|
   pv_deleted = `kubectl describe persistentvolume #{pv} > /dev/null 2>&1`
-  if pv_deleted[/(NotFound)/]
+  ## Michel ## if pv_deleted[/(NotFound)/]
+  if pv_deleted[/NotFound/]
     # As the main loop can take a while to complete, just ensure the PV has not been deleted in the mean while.
     # Example: Error from server (NotFound): persistentvolumes "pvc-dbf41f81-2e44-11ea-b136-4201ac100008" not found
     puts "This PV deleted since start of run: #{pv}."
