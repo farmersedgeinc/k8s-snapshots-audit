@@ -78,17 +78,18 @@ pv_arr.each do |pv|
     puts "Supported volume #{pv}."
     # Since this is volume backed by a gce disk, let's see if there is a backup schedule assigned to it.
     snap_schedule = `gcloud compute disks describe #{pd_name} --region us-central1 --format="value(resourcePolicies)" 2>&1`
-    pv_report_line_arr = if snap_schedule.length.positive?
-                           [claim_line_arr[:claim_name], pv, snap_schedule]
-                         else
-                           [claim_line_arr[:claim_name], pv, 'None']
-                         end
+    if snap_schedule.length.positive?
+      snap_schedule_short_name = snap_schedule.match(%r{^.*(/[a-z0-9-]+$)})
+      pv_report_line_arr = [claim_line_arr[:claim_name], pv, snap_schedule_short_name]
+    else
+      pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'None']
+    end
   else
     puts "Found unsupported volume #{pv}."
     pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Unsupported Volume}']
   end
   pv_report_arr.push(pv_report_line_arr)
-  puts "Report Line: #{pv_report_line_arr[0]} #{pv_report_line_arr[1]} #{pv_report_line_arr[2]} REPORT SIZE: #{pv_report_arr.length}"
+  puts "Report Line: #{pv_report_line_arr[0]} #{pv_report_line_arr[1]} #{pv_report_line_arr[2]} PV COUNT: #{pv_report_arr.length}"
   puts
 end
 
