@@ -78,7 +78,7 @@ pv_arr.each do |pv|
     puts "Supported volume #{pv}."
     # Since this is volume backed by a gce disk, let's see if there is a backup schedule assigned to it.
     snap_schedule = `gcloud compute disks describe #{pd_name} --region us-central1 --format="value(resourcePolicies)" 2>&1`
-    pv_report_line_arr = if snap_schedule.!empty?
+    pv_report_line_arr = if snap_schedule.length.positive?
                            [claim_line_arr[:claim_name], pv, snap_schedule]
                          else
                            [claim_line_arr[:claim_name], pv, 'None']
