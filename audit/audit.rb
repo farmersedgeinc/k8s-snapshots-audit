@@ -80,7 +80,7 @@ pv_arr.each do |pv|
     snap_schedule = `gcloud compute disks describe #{pd_name} --region us-central1 --format="value(resourcePolicies)" 2>&1`
     if snap_schedule.length.positive?
       # snap_schedule_short_name = snap_schedule.match(%r{^.*(\/[a-zA-Z0-9-]+$)})
-      snap_schedule_short_name = snap_schedule[%r{/^.*\/([a-zA-Z0-9-]+)$/}]
+      snap_schedule_short_name = snap_schedule[%r{^.*\/([a-zA-Z0-9-]+)$}]
       pv_report_line_arr = [claim_line_arr[:claim_name], pv, snap_schedule_short_name]
     else
       pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'None']
