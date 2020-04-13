@@ -121,7 +121,7 @@ pv_arr.each do |pv|
 #      else
 #        puts 'ASSIGNED Snapshot Schedule for:' + pd_name
 #      end
-    end
+#    end
   else
     puts "Skipping #{pv}, not backed by a gcePersistentDisk."
   end
