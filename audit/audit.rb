@@ -79,10 +79,10 @@ pv_arr.each do |pv|
     # Since this is volume backed by a gce disk, let's see if there is a backup schedule assigned to it.
     snap_schedule = `gcloud compute disks describe #{pd_name} --region us-central1 --format="value(resourcePolicies)" 2>&1`
     if snap_schedule.length.positive?
-      snap_schedule_short_name = snap_schedule.match(%r{^.*(\/[a-zA-Z0-9-]+$)})
-      pv_report_line_arr = [claim_line_arr[:claim_name], pv, snap_schedule_short_name[1]]
+      snap_schedule_short_name = snap_schedule.match(%r{^.*\/([a-zA-Z0-9-]+$)})
+      pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Schedule: ' + snap_schedule_short_name[1]]
     else
-      pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'None']
+      pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Schedule: None']
     end
   else
     puts "Found unsupported volume #{pv}."
@@ -138,7 +138,7 @@ pv_report_arr.each do |line|
       timestamp_arr.push(creation_timestamp)
     end
     report.push(' ')
-    if Date.parse(timestamp_arr.max.to_s) < Date.today - 2
+    if Date.parse(timestamp_arr.max.to_s) < Date.today - 1
       report.push('Number of Snapshots: ' + timestamp_arr.count.to_s + ' Oldest: ' + timestamp_arr.min.to_s.chomp + ' Newest: {\color{red}' + timestamp_arr.max.to_s.chomp + '}')
     else
       report.push('Number of Snapshots: ' + timestamp_arr.count.to_s + ' Oldest: ' + timestamp_arr.min.to_s.chomp + ' Newest: {\color{blue}' + timestamp_arr.max.to_s.chomp + '}')
@@ -157,7 +157,7 @@ report.push('Also, if snapshot dates appear in red, check it see if snapshot cre
 report.push('The "k8s\_snapshots" does not support ROOK, NFS, or any other volumes which do not have labels for "region" and "zone".')
 report.push('\end{document}')
 
-# Prepare PFD
+# Prepare PDF
 `rm /tmp/#{cluster_name}.tex >/dev/null 2>&1`
 `rm /tmp/#{cluster_name}.aux >/dev/null 2>&1`
 `rm /tmp/#{cluster_name}.log >/dev/null 2>&1`
