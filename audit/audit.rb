@@ -81,7 +81,7 @@ pv_arr.each do |pv|
     if snap_schedule.length.positive?
       # snap_schedule_short_name = snap_schedule.match(%r{^.*(\/[a-zA-Z0-9-]+$)})
       snap_schedule_short_name = snap_schedule[%r{^.*\/([a-zA-Z0-9-]+)$}]
-      pv_report_line_arr = [claim_line_arr[:claim_name], pv, snap_schedule_short_name]
+      pv_report_line_arr = [claim_line_arr[:claim_name], pv, snap_schedule_short_name[1]]
     else
       pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'None']
     end
