@@ -53,46 +53,80 @@ context_check = `#{set_context} > /dev/null 2>&1 ; echo $?`
 slack_notify('Could not set kube context.', slack_k8s_snapshotter_app_webhook.to_s) unless context_check.to_i.zero?
 
 # Get all of the physical volumes for the current context.  We only want the "Bound" volumes, not the "Available, Released, Terminating, etc." volumes.
-pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}"`
+pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}" 2>&1`
 pv_arr = pv_flat_list.split(' ')
 pv_report_arr = []
 
-# For each PV, check to see if an annotation for the snapshotter needs to be added.
+# # For each PV, check to see if an annotation for the snapshotter needs to be added.
+# pv_arr.each do |pv|
+#   puts "Checking #{pv} for annotation."
+#   pv_deleted = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas 2>&1`
+#   if pv_deleted[/NotFound/]
+#     # As the main loop can take a while to complete, just ensure the PV has not been deleted in the mean while.
+#     # Example: Error from server (NotFound): persistentvolumes "pvc-dbf41f81-2e44-11ea-b136-4201ac100008" not found
+#     puts "This PV deleted since start of run: #{pv}."
+#     next
+#   end
+# 
+#   claim_line = `kubectl describe persistentvolume #{pv} | grep Claim: `
+#   claim_line_arr = claim_line.match(%r{^Claim:\s+(?<claim_name>[a-z0-9-]+)\/[a-z0-9-]+$})
+#   delta_check = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas > /dev/null 2>&1 ; echo $?`
+#   if delta_check.to_i.zero?
+#     annotation = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas`
+#     backup_schedule = annotation[/P.*$/]
+#     pv_report_line_arr = [claim_line_arr[:claim_name], pv, "Schedule: #{backup_schedule}"]
+#   else
+#     # The k8s-snapshots program will consider any GKE PVC which lacks "region" or "zone" within the PV Labels as an "Unsupported Volume".
+#     # NFS and Rook are not supported, most likely they are missing the "gcePersistentDisk" (via "get -o yaml") which points to the actual disk.
+#     # "Zone" and "region" appear under "labels:" as part of the "failure-domain".
+#     supported_volume = `kubectl describe persistentvolume #{pv} | grep failure-domain.beta.kubernetes.io > /dev/null 2>&1 ; echo $?`
+#     if supported_volume.to_i.zero?
+#       puts "Adding annotation to this PV: #{pv}."
+#       ## Michel ## patch_ok = `kubectl patch persistentvolume #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
+#       ## Michel ## slack_notify("Failed to patch #{pv}!", slack_k8s_snapshotter_app_webhook.to_s) unless patch_ok.to_i.zero?
+#       pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Added to Snapshotter Schedule}']
+#     else
+#       puts "Found unsupported volume #{pv}."
+#       pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Unsupported Volume}']
+#     end
+#   end
+#   pv_report_arr.push(pv_report_line_arr)
+#   puts "Report Line: #{pv_report_line_arr[0]} #{pv_report_line_arr[1]} #{pv_report_line_arr[2]} REPORT SIZE: #{pv_report_arr.length}"
+# end
+
+# iNEW  For each PVC, get the "PDName".
+# Only the persistent volumes which are backed by a "gcePersistentDisk" (field name: "PDName") are expected to have snapshots.
 pv_arr.each do |pv|
-  puts "Checking #{pv} for annotation."
-  pv_deleted = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas > /dev/null 2>&1`
-  if pv_deleted[/(Not Found)/]
+  pv_deleted = `kubectl describe persistentvolume #{pv} 2>&1`
+  if pv_deleted[/NotFound/]
     # As the main loop can take a while to complete, just ensure the PV has not been deleted in the mean while.
     # Example: Error from server (NotFound): persistentvolumes "pvc-dbf41f81-2e44-11ea-b136-4201ac100008" not found
+    # This is informational only, not a cause to exit the script.
     puts "This PV deleted since start of run: #{pv}."
     next
   end
-
-  claim_line = `kubectl describe persistentvolume #{pv} | grep Claim: `
-  claim_line_arr = claim_line.match(%r{^Claim:\s+(?<claim_name>[a-z0-9-]+)\/[a-z0-9-]+$})
-  delta_check = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas > /dev/null 2>&1 ; echo $?`
-  if delta_check.to_i.zero?
-    annotation = `kubectl describe persistentvolume #{pv} | grep backup.kubernetes.io.deltas`
-    backup_schedule = annotation[/P.*$/]
-    pv_report_line_arr = [claim_line_arr[:claim_name], pv, "Schedule: #{backup_schedule}"]
-  else
-    # The k8s-snapshots program will consider any GKE PVC which lacks "region" or "zone" within the PV Labels as an "Unsupported Volume".
-    # NFS and Rook are not supported, most likely they are missing the "gcePersistentDisk" (via "get -o yaml") which points to the actual disk.
-    # "Zone" and "region" appear under "labels:" as part of the "failure-domain".
-    supported_volume = `kubectl describe persistentvolume #{pv} | grep failure-domain.beta.kubernetes.io > /dev/null 2>&1 ; echo $?`
-    if supported_volume.to_i.zero?
-      puts "Adding annotation to this PV: #{pv}."
-      ## Michel ## patch_ok = `kubectl patch persistentvolume #{pv} -p '{"metadata": {"annotations": {"backup.kubernetes.io/deltas": "P1D P14D"}}}' > /dev/null 2>&1 ; echo $?`
-      ## Michel ## slack_notify("Failed to patch #{pv}!", slack_k8s_snapshotter_app_webhook.to_s) unless patch_ok.to_i.zero?
-      pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Added to Snapshotter Schedule}']
-    else
-      puts "Found unsupported volume #{pv}."
-      pv_report_line_arr = [claim_line_arr[:claim_name], pv, '{\color{blue}Unsupported Volume}']
+  # If the PV is backed by a google disk (pdName), then we will check if the google disk has a snapshot schedule.
+  pd_name = `kubectl get persistentvolume #{pv} -o=jsonpath="{['spec.gcePersistentDisk.pdName']}" 2>&1`
+  if pd_name.length.positive?
+    puts "Report Line: #{pv_report_line_arr[0]} #{pv_report_line_arr[1]} #{pv_report_line_arr[2]} REPORT SIZE: #{pv_report_arr.length}"
+    pv_report_arr.push(pv_report_line_arr)
+#    snap_schedule = `gcloud compute disks describe #{pd_name} --region us-central1 --format="value(resourcePolicies)" 2>&1`
+#    if snap_schedule.length > 1
+#      puts 'Found Snapshot Schedule for: ' + pd_name
+#    else
+#      assignment_results = `gcloud compute disks add-resource-policies #{pd_name} --resource-policies dailykeep14 --region us-central1 2>&1`
+#      if assignment_results[/ERROR/]
+#        puts 'ASSIGNMENT ERROR: ' + assignment_results
+#        slack_notify("Snapshot Scheduler assignment error for #{pd_name}", slack_k8s_snapshotter_app_webhook.to_s)
+#      else
+#        puts 'ASSIGNED Snapshot Schedule for:' + pd_name
+#      end
     end
+  else
+    puts "Skipping #{pv}, not backed by a gcePersistentDisk."
   end
-  pv_report_arr.push(pv_report_line_arr)
-  puts "Report Line: #{pv_report_line_arr[0]} #{pv_report_line_arr[1]} #{pv_report_line_arr[2]} REPORT SIZE: #{pv_report_arr.length}"
 end
+
 
 # Report Preamble
 puts 'Starting report preparation.'
