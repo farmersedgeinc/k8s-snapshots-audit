@@ -74,11 +74,11 @@ pv_arr.each do |pv|
 
   # If the PV is backed by a google disk (pdName), then we will check if the google disk has a snapshot schedule.
   pd_name = `kubectl get persistentvolume #{pv} -o=jsonpath="{['spec.gcePersistentDisk.pdName']}" 2>&1`
-  if pd_name.length.positive?
+  if pd_name.length > 1
     puts "Supported volume #{pv}."
     # Since this is volume backed by a gce disk, let's see if there is a backup schedule assigned to it.
     snap_schedule = `gcloud compute disks describe #{pd_name} --region us-central1 --format="value(resourcePolicies)" 2>&1`
-    if snap_schedule.length.positive?
+    if snap_schedule.length > 1
       snap_schedule_short_name = snap_schedule.match(%r{^.*\/([a-zA-Z0-9-]+$)})
       pv_report_line_arr = [claim_line_arr[:claim_name], pv, 'Schedule: ' + snap_schedule_short_name[1]]
     else
