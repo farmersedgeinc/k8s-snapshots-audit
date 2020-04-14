@@ -66,7 +66,7 @@ pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')][
 pv_arr = pv_flat_list.split(' ')
 
 # For each PVC, get the "PDName".  For multi-zone disks, "gcloud" will find them within a "region", but for single-zone disks, we will have to search through each zone.
-zones = ['--region us-central1', '--zone us-central1-a', '--zone us-central1-x', '--zone us-central1-c', '--zone us-central1-d', '--zone us-central1-e', '--zone us-central1-f']
+zones = ['--region us-central1', '--zone us-central1-a', '--zone us-central1-b', '--zone us-central1-c', '--zone us-central1-d', '--zone us-central1-e', '--zone us-central1-f']
 pv_arr.each do |pv|
   pv_deleted = `kubectl describe persistentvolume #{pv} 2>&1`
   if pv_deleted[/NotFound/]
@@ -95,6 +95,7 @@ pv_arr.each do |pv|
       zones.each do |zone|
         puts "Trying to ASSIGN snap_schedule for #{pd_name} in #{zone}"
         assignment_results = `gcloud compute disks add-resource-policies #{pd_name} --resource-policies dailykeep14 #{zone} 2>&1`
+        puts assignment_results
         break unless assignment_results[/ERROR/]
       end
       if assignment_results[/ERROR/]
@@ -107,6 +108,7 @@ pv_arr.each do |pv|
   else
     puts "Skipping #{pv}"
   end
+  puts
 end
 
 slack_notify("Snapshot Scheduler verification complete for #{cluster_name}", slack_k8s_snapshotter_app_webhook.to_s)
