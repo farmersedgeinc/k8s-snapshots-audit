@@ -65,7 +65,8 @@ slack_notify('Could not set kube context.', slack_k8s_snapshotter_app_webhook.to
 pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}" 2>&1`
 pv_arr = pv_flat_list.split(' ')
 
-# For each PVC, get the "PDName".
+# For each PVC, get the "PDName".  For multi-zone disks, "gcloud" will find them within a "region", but for single-zone disks, we will have to search through each zone.
+zones = ['--region us-central1', '--zone us-central1-a', '--zone us-central1-x', '--zone us-central1-c', '--zone us-central1-d', '--zone us-central1-e', '--zone us-central1-f']
 pv_arr.each do |pv|
   pv_deleted = `kubectl describe persistentvolume #{pv} 2>&1`
   if pv_deleted[/NotFound/]
@@ -78,20 +79,24 @@ pv_arr.each do |pv|
   # If the PV is backed by a google disk (pdName), then we will check if the google disk has a snapshot schedule.
   pd_name = `kubectl get persistentvolume #{pv} -o=jsonpath="{['spec.gcePersistentDisk.pdName']}" 2>&1`
   if pd_name.length.positive?
-    zones = ['--region us-central1', '--zone us-central1-a', '--zone us-central1-x', '--zone us-central1-c', '--zone us-central1-d', '--zone us-central1-e', '--zone us-central1-f']
+    # Ok, let's try to find if there is a snapshot schedule already assigned to the disk, we might have to check several zones.
     snap_schedule = 'ERROR'
     zones.each do |zone|
-      puts "Trying to find #{pd_name} in #{zone}"
+      puts "Trying to find snap_schedule for #{pd_name} in #{zone}"
       snap_schedule = `gcloud compute disks describe #{pd_name} #{zone} --format="value(resourcePolicies)" 2>&1`
       break unless snap_schedule[/ERROR/]
-
-      # puts "Trying to find #{pd_name} in #{zone}"
     end
-    slack_notify("Unable to find #{pd_name} for #{cluster_name}!", slack_k8s_snapshotter_app_webhook.to_s) if snap_schedule[/ERROR/]
+    slack_notify("Unable to find #{pd_name} in #{cluster_name}!", slack_k8s_snapshotter_app_webhook.to_s) if snap_schedule[/ERROR/]
     if snap_schedule.length > 1
       puts 'Found Snapshot Schedule for: ' + pd_name
     else
-      assignment_results = `gcloud compute disks add-resource-policies #{pd_name} --resource-policies dailykeep14 --region us-central1 2>&1`
+      # Ok, let's assign the default snapshot schedule "dailykeep14", again, might have to try in several zones.
+      assignment_results = 'ERROR'
+      zones.each do |zone|
+        puts "Trying to ASSIGN snap_schedule for #{pd_name} in #{zone}"
+        assignment_results = `gcloud compute disks add-resource-policies #{pd_name} --resource-policies dailykeep14 #{zone} 2>&1`
+        break unless assignment_results[/ERROR/]
+      end
       if assignment_results[/ERROR/]
         puts 'ASSIGNMENT ERROR: ' + assignment_results
         slack_notify("Snapshot Scheduler assignment error for #{pd_name}", slack_k8s_snapshotter_app_webhook.to_s)
