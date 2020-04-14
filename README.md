@@ -27,7 +27,7 @@ Persistent volumes which are not bound to any claim are not included in the repo
 Note, there is a utility to create snapshots [here](https://github.com/farmersedgeinc/k8s-snapshots), but we no longer use it as
 it seems to have issues when managing more than 50 or so persistent volumes.
 
-## Required components for the audit script:
+## Required components for these script:
 
 1. ENV variables, found in `project_configs/projects/k8s-snapshotter-audit`
 1. Google Service Account called `k8s_snapshotter_audit`, created in `terraform2`, with its json kept in the helm chart envs.
