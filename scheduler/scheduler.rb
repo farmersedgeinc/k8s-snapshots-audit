@@ -52,14 +52,14 @@ def slack_notify(error_msg, webhook)
 end
 
 # Log into google and set the project.
-gcloud_auth_ok = `gcloud auth activate-service-account --key-file /service-account/k8s_snapshotter_audit_sa.json > /dev/null 2>&1 ; echo $?`
-slack_notify('Auth to Gcloud failed.', slack_k8s_snapshotter_app_webhook.to_s) unless gcloud_auth_ok.to_i.zero?
-gcloud_set_project_ok = `gcloud config set project #{gcloud_project} > /dev/null 2>&1 ; echo $?`
-slack_notify('Set Gcloud project failed.', slack_k8s_snapshotter_app_webhook.to_s) unless gcloud_set_project_ok.to_i.zero?
+gcloud_auth_ok = `gcloud auth activate-service-account --key-file /service-account/k8s_snapshotter_audit_sa.json 2>&1`
+slack_notify('Auth to Gcloud failed.', slack_k8s_snapshotter_app_webhook.to_s) if gcloud_auth_ok[/ERROR/]
+gcloud_set_project_ok = `gcloud config set project #{gcloud_project} 2>&1`
+slack_notify('Set Gcloud project failed.', slack_k8s_snapshotter_app_webhook.to_s) if gcloud_set_project_ok[/ERROR/]
 
 # Select the kube context.
-context_check = `#{set_context} > /dev/null 2>&1 ; echo $?`
-slack_notify('Could not set kube context.', slack_k8s_snapshotter_app_webhook.to_s) unless context_check.to_i.zero?
+context_check = `#{set_context} 2>&1`
+slack_notify('Could not set kube context.', slack_k8s_snapshotter_app_webhook.to_s) if context_check[/ERROR/]
 
 # Get all of the physical volumes for the current context.  We only want the "Bound" volumes, not the "Available, Released, Terminating, etc." volumes.
 pv_flat_list = `kubectl get pv -o=jsonpath="{.items[?(@.status.phase=='Bound')]['.metadata.name']}" 2>&1`
