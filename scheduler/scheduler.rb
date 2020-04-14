@@ -78,7 +78,13 @@ pv_arr.each do |pv|
   # If the PV is backed by a google disk (pdName), then we will check if the google disk has a snapshot schedule.
   pd_name = `kubectl get persistentvolume #{pv} -o=jsonpath="{['spec.gcePersistentDisk.pdName']}" 2>&1`
   if pd_name.length.positive?
-    snap_schedule = `gcloud compute disks describe #{pd_name} --region us-central1 --format="value(resourcePolicies)" 2>&1`
+    zone = ['--region us-central1', '--zone us-central1-a', '--zone us-central1-x', '--zone us-central1-c', '--zone us-central1-d', '--zone us-central1-e', '--zone us-central1-f']
+    snap_schedule = 'ERROR'
+    while snap_schedule[/ERROR/]
+      puts "Trying to find #{pd_name} in #{zone}"
+      snap_schedule = `gcloud compute disks describe #{pd_name} #{zone} --format="value(resourcePolicies)" 2>&1`
+    end
+    slack_notify("Unable to find #{pd_name} for #{cluster_name}!", slack_k8s_snapshotter_app_webhook.to_s) if snap_schedule[/ERROR/]
     if snap_schedule.length > 1
       puts 'Found Snapshot Schedule for: ' + pd_name
     else
