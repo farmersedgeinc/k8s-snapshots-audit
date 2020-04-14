@@ -81,10 +81,11 @@ pv_arr.each do |pv|
     zones = ['--region us-central1', '--zone us-central1-a', '--zone us-central1-x', '--zone us-central1-c', '--zone us-central1-d', '--zone us-central1-e', '--zone us-central1-f']
     snap_schedule = 'ERROR'
     zones.each do |zone|
-      snap_schedule = `gcloud compute disks describe #{pd_name} #{zone} --format="value(resourcePolicies)" 2>&1`
-      break if snap_schedule[/ERROR/]
-
       puts "Trying to find #{pd_name} in #{zone}"
+      snap_schedule = `gcloud compute disks describe #{pd_name} #{zone} --format="value(resourcePolicies)" 2>&1`
+      break unless snap_schedule[/ERROR/]
+
+      # puts "Trying to find #{pd_name} in #{zone}"
     end
     slack_notify("Unable to find #{pd_name} for #{cluster_name}!", slack_k8s_snapshotter_app_webhook.to_s) if snap_schedule[/ERROR/]
     if snap_schedule.length > 1
