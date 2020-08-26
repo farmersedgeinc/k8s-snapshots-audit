@@ -1,5 +1,6 @@
 {
   "project_configs_project": "k8s-snapshotter-audit",
+  "gcr": true,
   "components": {
     "audit": {
       "context": "./audit",
